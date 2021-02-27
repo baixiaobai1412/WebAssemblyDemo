@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8" />
+    <title>WebAssemblyDemo</title>
+    <style>
+      body {
+        font-family: arial;
+        margin: 0;
+        padding: none;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 输入文本框 -->
+    <textarea id="inputtext" rows="10" cols="30" placeholder="请在此处输入内容" onkeyup="getTextAreaValueToC()"></textarea>
+    
+    <!-- 输出wasm转换完的数据 -->
+    <div id="output"></div>
+    
+    <script type="text/javascript">
+      var Module = {
+        print: (function () {
+          var element = document.getElementById('output')
+
+          if (element) element.value = '' // 初始化变量
+          return function (text) {
+
+            if (arguments.length > 1)
+              text = Array.prototype.slice.call(arguments).join(' ') // 接收wasm输出的结果
+              console.log(text)
+
+            if (element) {
+              element.innerHTML = text // 打印结果 （+=追加打印）
+              element.scrollTop = element.scrollHeight // focus on bottom
+            }
+          }
+        })(),
+      }
+
+      //将文本框内容发送给C函数
+      function getTextAreaValueToC() {
+        var TextAreaValue = document.all.inputtext.value // 获取文本框的内容
+        TextAreaValue = TextAreaValue.replace(/\n/g, '<br/>') // 将换行符替换为<br/>
+
+        //通过ccall调用C函数
+        var result = Module.ccall(
+          'PrintfToWeb', // C的函数名
+          'null', // 函数的返回值
+          ['string'], // 值的类型
+          [TextAreaValue] // 传到C的值
+        )
+      }
+    </script>
+    <script async type="text/javascript" src="a.out.js"></script>
+  </body>
+</html>
